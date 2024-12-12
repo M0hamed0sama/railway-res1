@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cancellation Page</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Cancel Tickets</h1>
+        <p>Select the tickets you want to cancel and click "Cancel Selected Tickets".</p>
+        
+        <table id="cancellation-table">
+            <thead>
+                <tr>
+                    <th>Ticket ID</th>
+                    <th>Train ID</th>
+                    <th>From Station</th>
+                    <th>To Station</th>
+                    <th>Departure Time</th>
+                    <th>Select</th>
+                </tr>
+            </thead>
+            <tbody id="cancellation-list">
+                <!-- Tickets will be dynamically added here -->
+            </tbody>
+        </table>
+        <button id="cancel-button">Cancel Selected Tickets</button>
+           </div>
+           <script>
+            // Fetch the tickets for the logged-in user when the page loads
+            document.addEventListener('DOMContentLoaded', async () => {
+                try {
+                    console.log('Fetching tickets...'); // Debugging log
+                    const response = await fetch('/tickets'); // Fetch tickets from the backend
+                    const data = await response.json();
+        
+                    console.log('Response from /tickets:', data); // Log the API response
+        
+                    if (!data.success) {
+                        alert(data.message || 'Failed to fetch tickets.');
+                        window.location.href = 'login.html'; // Redirect to login page if unauthorized
+                        return;
+                    }
+        
+                    const ticketList = document.getElementById('cancellation-list'); // Target the table body
+                    ticketList.innerHTML = ''; // Clear the table in case of re-rendering
+        
+                    if (data.tickets.length > 0) {
+                        console.log('Tickets:', data.tickets); // Debugging log
+                        data.tickets.forEach((ticket) => {
+                            // Create a new row for each ticket
+                            const row = document.createElement('tr');
+                            row.innerHTML = `
+                                <td>${ticket.ticket_id}</td>
+                                <td>${ticket.train_id}</td>
+                                <td>${ticket.fromStation}</td>
+                                <td>${ticket.toStation}</td>
+                                <td>${ticket.departureTime}</td>
+                                <td><input type="checkbox" class="ticket-checkbox" value="${ticket.ticket_id}"></td>
+                            `;
+                            ticketList.appendChild(row); // Append the row to the table body
+                        });
+                    } else {
+                        // No tickets found
+                        console.log('No tickets found for the user.');
+                        ticketList.innerHTML = '<tr><td colspan="6">No tickets found.</td></tr>';
+                    }
+                } catch (error) {
+                    console.error('Error fetching tickets:', error); // Log the error
+                    alert('Something went wrong while fetching tickets.');
+                }
+            });
+        
+            // Cancel selected tickets when the "Cancel" button is clicked
+            document.getElementById('cancel-button').addEventListener('click', async () => {
+                // Collect selected ticket IDs
+                const selectedTicketIds = Array.from(document.querySelectorAll('.ticket-checkbox:checked')).map(
+                    (checkbox) => checkbox.value
+                );
+        
+                if (selectedTicketIds.length === 0) {
+                    alert('Please select at least one ticket to cancel.');
+                    return;
+                }
+        
+                try {
+                    console.log('Canceling tickets:', selectedTicketIds); // Debugging log
+                    const response = await fetch('/cancel-tickets', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ ticket_ids: selectedTicketIds }), // Send selected ticket IDs to the backend
+                    });
+        
+                    const result = await response.json();
+        
+                    console.log('Response from /cancel-tickets:', result); // Debugging log
+        
+                    if (result.success) {
+                        alert('Tickets canceled successfully!');
+                        window.location.reload(); // Reload the page to refresh the list of tickets
+                    } else {
+                        alert(result.message || 'Failed to cancel tickets.');
+                    }
+                } catch (error) {
+                    console.error('Error canceling tickets:', error); // Log the error
+                    alert('Something went wrong while canceling tickets.');
+                }
+            });
+        </script>
+            
+</body>
+</html>

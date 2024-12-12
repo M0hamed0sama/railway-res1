@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reservation</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Reservation</h1>
+
+        <!-- Filtering Section -->
+        <div class="filters">
+            <label for="fromStation">From:</label>
+            <select id="fromStation">
+                <option value="">-- Select --</option>
+            </select>
+
+            <label for="toStation">To:</label>
+            <select id="toStation">
+                <option value="">-- Select --</option>
+            </select>
+
+            <button id="filter-btn">Filter</button>
+        </div>
+
+        <!-- Reservation Table -->
+        <table id="reservation-table">
+            <thead>
+                <tr>
+                    <th>Select</th>
+                    <th>Train ID</th>
+                    <th>From Station</th>
+                    <th>To Station</th>
+                    <th>Departure Time</th>
+                </tr>
+            </thead>
+            <tbody id="reservation-list">
+                <!-- Data will be inserted here dynamically -->
+            </tbody>
+        </table>
+
+        <button id="reserve-btn">Reserve</button>
+    </div>
+
+    <script>
+     
+    document.addEventListener('DOMContentLoaded', () => {
+        // Fetch available stations for filtering
+        fetch('/stations')
+            .then((response) => response.json())
+            .then((data) => {
+                const fromStationSelect = document.getElementById('fromStation');
+                const toStationSelect = document.getElementById('toStation');
+
+                data.stations.forEach((station) => {
+                    const optionFrom = document.createElement('option');
+                    optionFrom.value = station;
+                    optionFrom.textContent = station;
+                    fromStationSelect.appendChild(optionFrom);
+
+                    const optionTo = document.createElement('option');
+                    optionTo.value = station;
+                    optionTo.textContent = station;
+                    toStationSelect.appendChild(optionTo);
+                });
+            });
+
+        // Fetch reservations with optional filters
+        function fetchReservations(filters = {}) {
+            const query = new URLSearchParams(filters).toString();
+            fetch(`/reservations?${query}`)
+                .then((response) => response.json())
+                .then((data) => {
+                    const reservationList = document.getElementById('reservation-list');
+                    reservationList.innerHTML = ''; // Clear the list
+
+                    if (data.success && data.reservations.length > 0) {
+                        data.reservations.forEach((reservation) => {
+                            const row = document.createElement('tr');
+                            row.innerHTML = `
+                                <td><input type="checkbox" class="reservation-checkbox" data-train-id="${reservation.train_id}" data-from="${reservation.fromStation}" data-to="${reservation.toStation}" data-departure="${reservation.departureTime}"></td>
+                                <td>${reservation.train_id}</td>
+                                <td>${reservation.fromStation}</td>
+                                <td>${reservation.toStation}</td>
+                                <td>${reservation.departureTime}</td>
+                            `;
+                            reservationList.appendChild(row);
+                        });
+                    } else {
+                        reservationList.innerHTML = '<tr><td colspan="5">No reservations found.</td></tr>';
+                    }
+                });
+        }
+
+        // Initial fetch of reservations
+        fetchReservations();
+
+        // Filter button
+        document.getElementById('filter-btn').addEventListener('click', () => {
+            const fromStation = document.getElementById('fromStation').value;
+            const toStation = document.getElementById('toStation').value;
+
+            const filters = {};
+            if (fromStation) filters.fromStation = fromStation;
+            if (toStation) filters.toStation = toStation;
+
+            fetchReservations(filters);
+        });
+
+        // Reserve selected reservations
+        document.getElementById('reserve-btn').addEventListener('click', async () => {
+            const selectedReservations = [];
+            const checkboxes = document.querySelectorAll('.reservation-checkbox:checked');
+
+            checkboxes.forEach((checkbox) => {
+                selectedReservations.push({
+                    train_id: checkbox.dataset.trainId,
+                    fromStation: checkbox.dataset.from,
+                    toStation: checkbox.dataset.to,
+                    departureTime: checkbox.dataset.departure,
+                });
+            });
+
+            if (selectedReservations.length === 0) {
+                alert('Please select at least one reservation.');
+                return;
+            }
+
+            try {
+                const response = await fetch('/reserve', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ reservations: selectedReservations }),
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    alert('Tickets reserved successfully!');
+                    window.location.href = 'tickets.html';
+                } else {
+                    alert(result.message || 'Failed to reserve tickets.');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Something went wrong.');
+            }
+        });
+    });
+
+
+        </script>
+        
+</body>
+</html>

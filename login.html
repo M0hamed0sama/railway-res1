@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h2>Login</h2>
+    <form id="loginForm">
+        <input type="email" id="email" placeholder="Email" required>
+        <input type="password" id="password" placeholder="Password" required>
+        <button type="submit" id="btn">Login</button>
+    </form>
+    <div id="messageContainer"></div>
+    <a href="signup.html">Don't have an account? Sign up here</a>
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            const response = await fetch('/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email, password }),
+            });
+
+            const result = await response.json();
+
+            // Display message
+            const messageContainer = document.getElementById('messageContainer');
+            messageContainer.innerHTML = '';
+            const messageElement = document.createElement('p');
+            messageElement.textContent = result.message;
+            messageContainer.appendChild(messageElement);
+
+            // Redirect on success
+            if (result.success) {
+                setTimeout(() => {
+                    window.location.href = 'main.html';
+                }, 2000); // Delay for user to see the message
+            }
+        });
+    </script>
+</body>
+</html>

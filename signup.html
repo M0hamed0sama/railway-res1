@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h2>Sign Up</h2>
+    <form id="signupForm">
+        <input type="email" id="email" placeholder="Email" required>
+        <input type="password" id="password" placeholder="Password" required>
+        <button type="submit">Sign Up</button>
+    </form>
+    <div id="messageContainer"></div>
+
+    <a href="login.html">Already have an account? Log in here</a>
+
+    <script >
+        document.getElementById('signupForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+
+    const response = await fetch('http://localhost:3000/signup', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+    });
+
+    const result = await response.json();
+
+    // Display the result message
+    const messageElement = document.createElement('p');
+    messageElement.textContent = result.message;
+
+    // Clear any previous messages
+    const messageContainer = document.getElementById('messageContainer');
+    messageContainer.innerHTML = ''; // Clear previous message
+    messageContainer.appendChild(messageElement);
+
+    // Redirect to login page on successful sign-up
+    if (result.success) {
+        setTimeout(() => {
+            window.location.href = 'login.html';
+        }, 2000); // Wait 2 seconds to show the success message
+    }
+});
+
+        </script>
+</body>
+</html>

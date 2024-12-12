@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Tickets</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Your Reserved Tickets</h1>
+        <table id="ticket-table">
+            <thead>
+                <tr>
+                    <th>Ticket ID</th>
+                    <th>Train ID</th>
+                    <th>From Station</th>
+                    <th>To Station</th>
+                    <th>Departure Time</th>
+                </tr>
+            </thead>
+            <tbody id="ticket-list">
+                <!-- Data will be inserted here dynamically -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const response = await fetch('/tickets');
+                const data = await response.json();
+    
+                if (!data.success) {
+                    alert(data.message || 'Failed to fetch tickets.');
+                    window.location.href = 'login.html'; // Redirect if unauthorized
+                    return;
+                }
+    
+                const ticketList = document.getElementById('ticket-list');
+                ticketList.innerHTML = ''; // Clear previous tickets
+    
+                if (data.tickets.length > 0) {
+                    data.tickets.forEach((ticket) => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${ticket.ticket_id}</td>
+                            <td>${ticket.train_id}</td>
+                            <td>${ticket.fromStation}</td>
+                            <td>${ticket.toStation}</td>
+                            <td>${ticket.departureTime}</td>
+                        `;
+                        ticketList.appendChild(row);
+                    });
+                } else {
+                    ticketList.innerHTML = '<tr><td colspan="5">No tickets found.</td></tr>';
+                }
+            } catch (error) {
+                console.error('Error fetching tickets:', error);
+                alert('Something went wrong.');
+            }
+        });
+    </script>
+    
+        
+</body>
+</html>

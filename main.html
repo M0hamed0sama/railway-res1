@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Main Page</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Welcome to the Main Page</h1>
+    <div class="button-container">
+        <button id="reservationButton">Reservation</button>
+        <button id="ticketsButton">Tickets</button>
+        <button id="cancellationButton">Cancellation</button>
+    </div>
+    <script > document.getElementById('reservationButton').addEventListener('click', () => {
+        window.location.href = 'reservation.html'; // Replace with your Reservation page URL
+    });
+    
+    document.getElementById('ticketsButton').addEventListener('click', () => {
+        window.location.href = 'tickets.html'; // Replace with your Tickets page URL
+    });
+    
+    document.getElementById('cancellationButton').addEventListener('click', () => {
+        window.location.href = 'cancellation.html'; // Replace with your Cancellation page URL
+    });
+    </script>
+</body>
+</html>
